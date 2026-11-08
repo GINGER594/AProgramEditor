@@ -319,12 +319,12 @@ func runTextEditor() error {
         fmt.Printf(helpMessage)
         return nil
     }
-    //processing syntax hue settings (unless editing APE settings)
     hueMap := huesettings.HueMap{
         Keywords: map[string]string{},
         Symbols: map[string]string{},
         Strings: map[string]string{},
     }
+    //processing syntax hue settings (unless editing APE settings or debugMode)
     if !debugMode {
         hueMap, err = huesettings.GetSyntaxHueSettings(ext)
         if err != nil {
