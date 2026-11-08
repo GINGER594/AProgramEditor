@@ -198,7 +198,7 @@ func formatTextForTerminal(editor *texteditor.TextEditor, hueMap *huesettings.Hu
     ftextBuilder := strings.Builder{}
     ftextBuilder.WriteString(resetHue + upperUI)
 
-    //iterating over the lines in the file below the end of the terminal (only applying syntax hues to visible lines)
+    //iterating over visible lines
     for y := termY; y < termY+termHeight; y++ {
         lineNumUI := ""
         if editor.LineNumToggle() {
