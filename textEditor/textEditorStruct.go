@@ -229,7 +229,15 @@ func (t *TextEditor) Untab() {
 
 //ctrl-key methods:
 
-//comments line y (and scrolls accordingly if it is the cursor line)
+//returns low-1, high, true if range is valid for ctrl-key methods
+func (t *TextEditor) validateRange(low, high int) (int, int, bool ){
+    if low >= 1 && low <= len(t.text) && high >= 1 && high <= len(t.text) && low <= high {
+        return low-1, high, true
+    }
+    return 0, 0, false
+}
+
+//comments line y (scrolls if cursor line)
 func (t *TextEditor) commentLine(y int) {
     line := t.text[y]
     t.text[y] = t.comment + line
@@ -239,7 +247,7 @@ func (t *TextEditor) commentLine(y int) {
     t.saved = false
 }
 
-//decomments line y (and scrolls accordingly if it is the cursor line)
+//decomments line y (scrolls if cursor line)
 func (t *TextEditor) decommentLine(y int) {
     line := t.text[y][len(t.comment):]
     if y == t.cur.Y() {
@@ -281,9 +289,7 @@ func (t *TextEditor) overHalfLinesCommented(low, high int) bool {
 
 //^] comments/decomments lines between low and high (will decomment if over half of the lines are uncommented and comment otherwise)
 func (t *TextEditor) CommentLines(low, high int) {
-    if t.comment != "" && low <= high {
-        low = max(0, low-1)
-        high = min(len(t.text), high)
+    if low, high, valid := t.validateRange(low, high); t.comment != "" && valid {
         overHalfCommented := t.overHalfLinesCommented(low, high)
         for y := low; y < high; y++ {
             if overHalfCommented && strings.HasPrefix(t.text[y], t.comment) {
@@ -297,54 +303,50 @@ func (t *TextEditor) CommentLines(low, high int) {
 
 //stores lines between low and high in storedLines field
 func (t *TextEditor) storeLines(low, high int) {
-    low = max(0, low-1)
-    high = min(len(t.text), high)
     t.storedLines = slices.Clone(t.text[low:high])
 }
 
 //^C
 func (t *TextEditor) StoreLines(low, high int) {
-    if low <= high {
+    if low, high, valid := t.validateRange(low, high); valid {
         t.storeLines(low, high)
     }
 }
 
-//deletes lines between low and high, moves cursor to (0, low)
+//deletes lines between low and high, moves cursor to start of deleted section
 func (t *TextEditor) deleteLines(low, high int) {
-    low = max(0, low-1)
-    high = min(len(t.text), high)
-    t.cur.ScrollVertical(t.text, t.termHeight, low-t.cur.Y()-1)
-    t.cur.ScrollToLineStart()
     t.text = append(t.text[:low], t.text[high:]...)
     if len(t.text) <= 0 {
         t.text = []string{""}
     }
+    //moving cursor to (0, low)
+    t.cur.ScrollVertical(t.text, t.termHeight, low-t.cur.Y())
+    t.cur.ScrollToLineStart()
     t.saved = false
 }
 
 //^X
 func (t *TextEditor) DeleteLines(low, high int) {
-    if low <= high {
+    if low, high, valid := t.validateRange(low, high); valid {
         t.deleteLines(low, high)
     }
 }
 
 //^Z
 func (t *TextEditor) StoreAndDeleteLines(low, high int) {
-    if low <= high {
+    if low, high, valid := t.validateRange(low, high); valid {
         t.storeLines(low, high)
         t.deleteLines(low, high)
     }
 }
 
-//^V inserts storedLines field into text field, moves cursor to (0, c.Y()+len(storedLines))
+//^V inserts storedLines field into text field, moves cursor to end of inserted lines
 func (t *TextEditor) InsertStoredLines() {
     if len(t.storedLines) > 0 {
         t.text = append(t.text[:t.cur.Y()], append(t.storedLines, t.text[t.cur.Y():]...)...)
-
-        //scrolling to (0, c.Y()+len(storedLines))
-        t.cur.ScrollVertical(t.text, t.termHeight, len(t.storedLines))
-        t.cur.ScrollToLineStart()
+        //moving cursor to (len(text[c.Y()]), c.Y()+len(storedLines)-1)
+        t.cur.ScrollVertical(t.text, t.termHeight, len(t.storedLines)-1)
+        t.cur.ScrollToLineEnd(t.text)
         t.saved = false
     }
 }
