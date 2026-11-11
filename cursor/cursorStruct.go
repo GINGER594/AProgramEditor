@@ -1,0 +1,78 @@
+package cursor
+
+import (
+    "math"
+)
+
+func clamp(n, lower, upper int) int {
+    if n < lower {
+        return lower
+    }
+    if n > upper {
+        return upper
+    }
+    return n
+}
+
+//struct for cursor movement/text scrolling
+type Cursor struct {
+    x int
+    targetX int //target x (for moving up/down through text)
+    y int
+    termY int //vertical offset that text will be displayed from (vertical scrolling)
+}
+
+func (c *Cursor) X() int {
+    return c.x
+}
+
+func (c *Cursor) Y() int {
+    return c.y
+}
+
+func (c *Cursor) TermY() int {
+    return c.termY
+}
+
+func (c *Cursor) SetDefaultValues() {
+    c.x = -1
+    c.targetX = c.x
+}
+
+func (c *Cursor) ScrollVertical(text []string, termHeight, n int) {
+    c.y = clamp(c.y+n, 0, len(text)-1)
+    c.x = clamp(c.targetX, -1, len(text[c.y])-1)
+
+    //scrolling view
+    if (n > 0 && c.y >= c.termY+termHeight) || (n < 0 && c.y < c.termY) {
+        c.termY = clamp(c.termY+n, 0, len(text)-1)
+    }
+}
+
+func (c *Cursor) ScrollHorizontal(text []string, termHeight, n int) {
+    sign := n / int(math.Abs(float64(n)))
+    for i := 0; i < int(math.Abs(float64(n))); i++ { //iteration for accurate movement over multiple lines
+        c.x += sign
+        //moving onto another line
+        if c.x < -1 || (c.x > len(text[c.y])-1) {
+            c.ScrollVertical(text, termHeight, sign)
+            c.x = -1
+            if sign < 0 {
+                c.x = len(text[c.y]) - 1
+            }
+        }
+        c.targetX = c.x
+    }
+}
+
+//for external use only, internal methods should clamp
+func (c *Cursor) ScrollToLineStart() {
+    c.x = -1
+    c.targetX = c.x
+}
+
+//for external use only, internal methods should clamp
+func (c *Cursor) ScrollToLineEnd(text []string) {
+    c.x = len(text[c.y]) - 1
+    c.targetX = c.x
+}
