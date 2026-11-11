@@ -74,7 +74,7 @@ func (t *TextEditor) UpdateTerminalAndUIFields() error {
         return err
     }
     UISeparator := strings.Repeat("_", termWidth)
-    t.upperUI = fmt.Sprintf("\x1b[0mAPE:%s\r\n%s\r\n", t.path, UISeparator)
+    t.upperUI = fmt.Sprintf("\x1b[0mAPE : %s\r\n%s\r\n", t.path, UISeparator)
     t.lowerUI = fmt.Sprintf("\x1b[0m%s\r\n%s\r\n%s\r\n%s\r\n", UISeparator, lowUILineA, lowUILineB, UISeparator)
     UIHeight := (strings.Count(t.upperUI+t.lowerUI, "\n") + 1)
     t.termWidth, t.termHeight = termWidth, termHeight-(UIHeight+1) //adding 1 to UIHeight so ENTER does not add extra line during ^R input
