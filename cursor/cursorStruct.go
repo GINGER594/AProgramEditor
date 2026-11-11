@@ -37,9 +37,10 @@ func (c *Cursor) TermY() int {
 func (c *Cursor) SetDefaultValues() {
     c.x = -1
     c.targetX = c.x
+    c.y = 0
 }
 
-func (c *Cursor) scrollVertical(text []string, termHeight, n int) {
+func (c *Cursor) ScrollVertical(text []string, termHeight, n int) {
     c.y = clamp(c.y+n, 0, len(text)-1)
     c.x = clamp(c.targetX, -1, len(text[c.y])-1)
 
@@ -49,13 +50,7 @@ func (c *Cursor) scrollVertical(text []string, termHeight, n int) {
     }
 }
 
-func (c *Cursor) ScrollVertical(text []string, termHeight, n int) {
-    if n != 0 {
-        c.scrollVertical(text, termHeight, n)
-    }
-}
-
-func (c *Cursor) scrollHorizontal(text []string, termHeight, n int) {
+func (c *Cursor) ScrollHorizontal(text []string, termHeight, n int) {
     sign := n / int(math.Abs(float64(n)))
     for i := 0; i < int(math.Abs(float64(n))); i++ { //iteration for accurate movement over multiple lines
         c.x += sign
@@ -68,12 +63,6 @@ func (c *Cursor) scrollHorizontal(text []string, termHeight, n int) {
             }
         }
         c.targetX = c.x
-    }
-}
-
-func (c *Cursor) ScrollHorizontal(text []string, termheight, n int) {
-    if n != 0 {
-        c.scrollHorizontal(text, termheight, n)
     }
 }
 
