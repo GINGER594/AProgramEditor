@@ -4,8 +4,8 @@ import (
     "fmt"
     "strings"
 
-    huesettings "aprogrameditor/hueSettings"
     texteditor "aprogrameditor/textEditor"
+    huesettings "aprogrameditor/hueSettings"
 )
 
 const resetHue string = "\x1b[0m"
