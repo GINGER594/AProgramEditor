@@ -11,8 +11,8 @@ import (
     "golang.org/x/term"
 
     huesettings "aprogrameditor/hueSettings"
-    output "aprogrameditor/output"
     texteditor "aprogrameditor/textEditor"
+    output "aprogrameditor/output"
 )
 
 const helpFlag string = "-h"
@@ -40,7 +40,7 @@ const helpMsg string =
                 "\n        white      37" +
                 "\n        default    39" +
                 "\n\n-d: debug mode (opens file without settings)" +
-                "\n\nAPE v1" +
+                "\n\nAPE v2" +
                 "\n"
 
 var keyByteMap map[string][]byte = map[string][]byte{
@@ -69,7 +69,7 @@ var keyByteMap map[string][]byte = map[string][]byte{
     "^Q": {17, 0, 0, 0},
 }
 
-//if file has not been saved the user will be given the option to save it
+//if file has not been saved, user will be given the option to save it
 func saveAndExit(editor *texteditor.TextEditor) error {
     fmt.Printf("\x1bc")
     if editor.Saved() {
@@ -191,7 +191,7 @@ func editMode(editor *texteditor.TextEditor, hueMap *huesettings.HueMap) error {
             editor.InsertTab()
         case slices.Equal(inp, keyByteMap["shift+tab"]):
             editor.Untab()
-        //ctrl key methods
+        //ctrl-key methods
         case slices.Equal(inp, keyByteMap["^["]):
             editor.CommentCursorLine()
         case slices.Equal(inp, keyByteMap["^]"]):
